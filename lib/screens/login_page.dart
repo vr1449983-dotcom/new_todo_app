@@ -186,38 +186,6 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
 
-                          /// 🔐 GOOGLE SIGN-IN BUTTON
-                          SizedBox(
-                            width: double.infinity,
-                            height: 55,
-
-                            child: OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                side: BorderSide(
-                                  color: Theme.of(context).colorScheme.outline,
-                                ),
-                              ),
-
-                              onPressed: () {
-                                authController.signInWithGoogle(); // ✅ CALL ONLY
-                              },
-
-                              icon: Image.network(
-                                "https://cdn-icons-png.flaticon.com/512/281/281764.png",
-                                height: 22,
-                              ),
-
-                              label: const Text(
-                                "Continue with Google",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
 
 
 
@@ -271,6 +239,40 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                             )),
+                          ),
+
+
+                          /// 🔐 GOOGLE SIGN-IN BUTTON
+                          SizedBox(
+                            width: double.infinity,
+                            height: 55,
+
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                side: BorderSide(
+                                  color: Theme.of(context).colorScheme.outline,
+                                ),
+                              ),
+
+                              onPressed: () {
+                                authController.signInWithGoogle();
+                              },
+
+                              icon: Image.network(
+                                "https://cdn-icons-png.flaticon.com/512/281/281764.png",
+                                height: 22,
+                              ),
+
+                              label: const Text(
+                                "Continue with Google",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                           ),
 
                           const SizedBox(height: 20),
