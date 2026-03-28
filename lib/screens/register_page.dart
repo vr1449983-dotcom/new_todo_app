@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -30,31 +31,23 @@ class _RegisterPageState extends State<RegisterPage> {
     return InputDecoration(
       labelText: label,
 
-      prefixIcon: Icon(
-        icon,
-        color: theme.colorScheme.primary,
-      ),
+      prefixIcon: Icon(icon),
 
       filled: true,
-      fillColor: theme.colorScheme.surfaceContainerHighest,
+      fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
 
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
       ),
 
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(
-          color: theme.colorScheme.outlineVariant,
-        ),
-      ),
-
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(
           color: theme.colorScheme.primary,
-          width: 2,
+          width: 1.5,
         ),
       ),
     );
@@ -78,366 +71,335 @@ class _RegisterPageState extends State<RegisterPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      body: Stack(
+        children: [
 
-
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-
-              /// HEADER
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 60),
-
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      theme.colorScheme.primary,
-                      theme.colorScheme.primaryContainer,
-                    ],
-                  ),
-
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(35),
-                  ),
-                ),
-
-                child: Column(
-                  children: [
-
-                    CircleAvatar(
-                      radius: 34,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.person_add_alt_1,
-                        size: 32,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    const Text(
-                      "Create Account",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    const Text(
-                      "Register to get started",
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
+          /// 🌈 GRADIENT BACKGROUND
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.secondary,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-
-              const SizedBox(height: 45),
-
-              /// FORM CARD
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-
-                child: Container(
-                  padding: const EdgeInsets.all(26),
-
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(22),
-
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 25,
-                        offset: const Offset(0, 12),
-                      )
-                    ],
-                  ),
-
-                  child: Column(
-                    children: [
-
-                      /// NAME
-                      TextField(
-                        controller: nameController,
-                        decoration: customInput(
-                          "Full Name",
-                          Icons.person_outline,
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      /// EMAIL
-                      TextField(
-                        controller: emailController,
-                        decoration: customInput(
-                          "Email",
-                          Icons.email_outlined,
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      /// PASSWORD
-                      TextField(
-                        controller: passwordController,
-                        obscureText: obscurePassword,
-
-                        decoration: customInput(
-                          "Password",
-                          Icons.lock_outline,
-                        ).copyWith(
-
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-
-                            onPressed: () {
-                              setState(() {
-                                obscurePassword = !obscurePassword;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      /// REGISTER BUTTON
-                      SizedBox(
-                        width: double.infinity,
-                        height: 55,
-
-                        child: Obx(() => ElevatedButton(
-
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: Colors.white,
-
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-
-                          onPressed: controller.isLoading.value
-                              ? null
-                              : () async {
-
-                            final name = nameController.text.trim();
-                            final email = emailController.text.trim();
-                            final password = passwordController.text.trim();
-
-                            /// ✅ VALIDATION
-                            if (name.isEmpty || email.isEmpty || password.isEmpty) {
-                              Get.snackbar("Error", "All fields are required");
-                              return;
-                            }
-
-                            if (!GetUtils.isEmail(email)) {
-                              Get.snackbar("Invalid Email", "Enter valid email");
-                              return;
-                            }
-
-                            try {
-                              controller.isLoading.value = true;
-
-                              /// 🔥 CHECK IN FIREBASE AUTH
-                              final methods = await FirebaseAuth.instance
-                                  .fetchSignInMethodsForEmail(email);
-
-                              if (methods.isNotEmpty) {
-                                controller.isLoading.value = false;
-
-                                /// ❌ USER EXISTS → GO TO LOGIN PAGE
-                                Get.snackbar(
-                                  "Account Exists",
-                                  "Redirecting to login...",
-                                );
-
-                                await Future.delayed(const Duration(seconds: 1));
-
-                                Get.off(() => const LoginPage(), arguments: {
-                                  "email": email,
-                                  "password": password,
-                                });
-
-                                return;
-                              }
-
-                              /// ✅ OPTIONAL FIRESTORE CHECK
-                              final query = await FirebaseFirestore.instance
-                                  .collection("users")
-                                  .where("email", isEqualTo: email)
-                                  .limit(1)
-                                  .get();
-
-                              if (query.docs.isNotEmpty) {
-                                controller.isLoading.value = false;
-
-                                Get.snackbar(
-                                  "Already Registered",
-                                  "Redirecting to login...",
-                                );
-
-                                await Future.delayed(const Duration(seconds: 1));
-
-                                Get.off(() => const LoginPage(), arguments: {
-                                  "email": email,
-                                  "password": password,
-                                });
-
-                                return;
-                              }
-
-                              controller.isLoading.value = false;
-
-                              /// 🚀 NEW USER → PRIVACY POLICY
-                              Get.to(
-                                    () => const PrivacyPolicyPage(),
-                                arguments: {
-                                  "name": name,
-                                  "email": email,
-                                  "password": password,
-                                },
-                              );
-
-                            } catch (e) {
-                              controller.isLoading.value = false;
-                              Get.snackbar("Error", e.toString());
-                            }
-                          },
-
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 250),
-
-                            child: controller.isLoading.value
-                                ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                                color: Colors.white,
-                              ),
-                            )
-                                : const Text(
-                              "Register",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        )),
-                      ),
-
-                      const SizedBox(height: 26),
-
-
-                      /// 🔹 DIVIDER
-                      Row(
-                        children: [
-                          const Expanded(child: Divider()),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text(
-                              "OR",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                          const Expanded(child: Divider()),
-                        ],
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      /// 🔐 GOOGLE SIGN-IN BUTTON
-                      SizedBox(
-                        width: double.infinity,
-                        height: 55,
-
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            side: BorderSide(
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                          ),
-
-                          onPressed: () {
-                            controller.signInWithGoogle(); // ✅ CALL ONLY
-                          },
-
-                          icon: Image.network(
-                            "https://cdn-icons-png.flaticon.com/512/281/281764.png",
-                            height: 22,
-                          ),
-
-                          label: const Text(
-                            "Continue with Google",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      /// LOGIN LINK
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-
-                          Text(
-                            "Already have an account? ",
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-
-                          GestureDetector(
-                            onTap: () {
-                              Get.back();
-                            },
-
-                            child: Text(
-                              "Login",
-                              style: TextStyle(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 35),
-            ],
+            ),
           ),
-        ),
+
+          /// 🔥 BLUR EFFECT
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+            child: Container(color: Colors.black.withOpacity(0.1)),
+          ),
+
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+
+              child: Column(
+                children: [
+
+                  const SizedBox(height: 30),
+
+                  /// 🔹 HEADER ICON
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.15),
+                    ),
+                    child: const Icon(
+                      Icons.person_add_alt_1_rounded,
+                      size: 32,
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  /// TITLE
+                  Text(
+                    "Create Account",
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  const Text(
+                    "Register to get started",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  /// 🧊 GLASS CARD
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(26),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(26),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                          ),
+                        ),
+
+                        child: Column(
+                          children: [
+
+                            /// NAME
+                            TextField(
+                              controller: nameController,
+                              decoration: customInput(
+                                "Full Name",
+                                Icons.person_outline,
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            /// EMAIL
+                            TextField(
+                              controller: emailController,
+                              decoration: customInput(
+                                "Email",
+                                Icons.email_outlined,
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            /// PASSWORD
+                            TextField(
+                              controller: passwordController,
+                              obscureText: obscurePassword,
+                              decoration: customInput(
+                                "Password",
+                                Icons.lock_outline,
+                              ).copyWith(
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      obscurePassword = !obscurePassword;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 28),
+
+                            /// 🔥 REGISTER BUTTON
+                            SizedBox(
+                              width: double.infinity,
+                              height: 55,
+
+                              child: Obx(() => ElevatedButton(
+
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 6,
+                                  shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                                  backgroundColor: theme.colorScheme.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+
+                                onPressed: controller.isLoading.value
+                                    ? null
+                                    : () async {
+
+                                  final name = nameController.text.trim();
+                                  final email = emailController.text.trim();
+                                  final password = passwordController.text.trim();
+
+                                  if (name.isEmpty || email.isEmpty || password.isEmpty) {
+                                    Get.snackbar("Error", "All fields are required");
+                                    return;
+                                  }
+
+                                  if (!GetUtils.isEmail(email)) {
+                                    Get.snackbar("Invalid Email", "Enter valid email");
+                                    return;
+                                  }
+
+                                  try {
+                                    controller.isLoading.value = true;
+
+                                    final methods = await FirebaseAuth.instance
+                                        .fetchSignInMethodsForEmail(email);
+
+                                    if (methods.isNotEmpty) {
+                                      controller.isLoading.value = false;
+
+                                      Get.snackbar(
+                                        "Account Exists",
+                                        "Redirecting to login...",
+                                      );
+
+                                      await Future.delayed(const Duration(seconds: 1));
+
+                                      Get.off(() => const LoginPage(), arguments: {
+                                        "email": email,
+                                        "password": password,
+                                      });
+
+                                      return;
+                                    }
+
+                                    final query = await FirebaseFirestore.instance
+                                        .collection("users")
+                                        .where("email", isEqualTo: email)
+                                        .limit(1)
+                                        .get();
+
+                                    if (query.docs.isNotEmpty) {
+                                      controller.isLoading.value = false;
+
+                                      Get.snackbar(
+                                        "Already Registered",
+                                        "Redirecting to login...",
+                                      );
+
+                                      await Future.delayed(const Duration(seconds: 1));
+
+                                      Get.off(() => const LoginPage(), arguments: {
+                                        "email": email,
+                                        "password": password,
+                                      });
+
+                                      return;
+                                    }
+
+                                    controller.isLoading.value = false;
+
+                                    Get.to(
+                                          () => const PrivacyPolicyPage(),
+                                      arguments: {
+                                        "name": name,
+                                        "email": email,
+                                        "password": password,
+                                      },
+                                    );
+
+                                  } catch (e) {
+                                    controller.isLoading.value = false;
+                                    Get.snackbar("Error", e.toString());
+                                  }
+                                },
+
+                                child: controller.isLoading.value
+                                    ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: Colors.white,
+                                  ),
+                                )
+                                    : const Text(
+                                  "Register",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              )),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            /// DIVIDER
+                            Row(
+                              children: const [
+                                Expanded(child: Divider()),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 10),
+                                  child: Text("OR"),
+                                ),
+                                Expanded(child: Divider()),
+                              ],
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            /// GOOGLE BUTTON
+                            SizedBox(
+                              width: double.infinity,
+                              height: 55,
+
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor: theme.colorScheme.surface,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  side: BorderSide(
+                                    color: theme.colorScheme.outlineVariant,
+                                  ),
+                                ),
+
+                                onPressed: () {
+                                  controller.signInWithGoogle();
+                                },
+
+                                icon: Image.network(
+                                  "https://cdn-icons-png.flaticon.com/512/281/281764.png",
+                                  height: 22,
+                                ),
+
+                                label: const Text(
+                                  "Continue with Google",
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            /// LOGIN LINK
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Already have an account?",
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Get.back();
+                                  },
+                                  child: const Text("Login"),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
