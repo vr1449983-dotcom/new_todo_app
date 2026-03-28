@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:new_todo_app/screens/privacy_policy_page.dart';
 import '../controller/auth_controller.dart';
+import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -233,14 +237,90 @@ class _RegisterPageState extends State<RegisterPage> {
 
                           onPressed: controller.isLoading.value
                               ? null
-                              : () {
+                              : () async {
 
-                            controller.register(
-                              nameController.text.trim(),
-                              emailController.text.trim(),
-                              passwordController.text.trim(),
-                            );
+                            final name = nameController.text.trim();
+                            final email = emailController.text.trim();
+                            final password = passwordController.text.trim();
 
+                            /// ✅ VALIDATION
+                            if (name.isEmpty || email.isEmpty || password.isEmpty) {
+                              Get.snackbar("Error", "All fields are required");
+                              return;
+                            }
+
+                            if (!GetUtils.isEmail(email)) {
+                              Get.snackbar("Invalid Email", "Enter valid email");
+                              return;
+                            }
+
+                            try {
+                              controller.isLoading.value = true;
+
+                              /// 🔥 CHECK IN FIREBASE AUTH
+                              final methods = await FirebaseAuth.instance
+                                  .fetchSignInMethodsForEmail(email);
+
+                              if (methods.isNotEmpty) {
+                                controller.isLoading.value = false;
+
+                                /// ❌ USER EXISTS → GO TO LOGIN PAGE
+                                Get.snackbar(
+                                  "Account Exists",
+                                  "Redirecting to login...",
+                                );
+
+                                await Future.delayed(const Duration(seconds: 1));
+
+                                Get.off(() => const LoginPage(), arguments: {
+                                  "email": email,
+                                  "password": password,
+                                });
+
+                                return;
+                              }
+
+                              /// ✅ OPTIONAL FIRESTORE CHECK
+                              final query = await FirebaseFirestore.instance
+                                  .collection("users")
+                                  .where("email", isEqualTo: email)
+                                  .limit(1)
+                                  .get();
+
+                              if (query.docs.isNotEmpty) {
+                                controller.isLoading.value = false;
+
+                                Get.snackbar(
+                                  "Already Registered",
+                                  "Redirecting to login...",
+                                );
+
+                                await Future.delayed(const Duration(seconds: 1));
+
+                                Get.off(() => const LoginPage(), arguments: {
+                                  "email": email,
+                                  "password": password,
+                                });
+
+                                return;
+                              }
+
+                              controller.isLoading.value = false;
+
+                              /// 🚀 NEW USER → PRIVACY POLICY
+                              Get.to(
+                                    () => const PrivacyPolicyPage(),
+                                arguments: {
+                                  "name": name,
+                                  "email": email,
+                                  "password": password,
+                                },
+                              );
+
+                            } catch (e) {
+                              controller.isLoading.value = false;
+                              Get.snackbar("Error", e.toString());
+                            }
                           },
 
                           child: AnimatedSwitcher(

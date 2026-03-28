@@ -364,7 +364,12 @@ class ProfilePage extends StatelessWidget {
                     context,
                     Icons.privacy_tip,
                     "Privacy Policy",
-                        () => Get.to(() => const PrivacyPolicyPage()),
+                        () => Get.to(
+                          () => const PrivacyPolicyPage(),
+                      arguments: {
+                        "fromProfile": true,
+                      },
+                    ),
                   ),
 
                   glassTile(

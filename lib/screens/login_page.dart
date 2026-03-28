@@ -23,6 +23,17 @@ class _LoginPageState extends State<LoginPage> {
   bool obscurePassword = true;
 
   @override
+  void initState() {
+    super.initState();
+
+    final data = Get.arguments;
+    if (data != null) {
+      emailController.text = data["email"] ?? "";
+      passwordController.text = data["password"] ?? "";
+    }
+  }
+
+  @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
@@ -30,14 +41,14 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   InputDecoration inputStyle(String hint, IconData icon) {
+    final theme = Theme.of(context);
+
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.grey.shade500),
-
       prefixIcon: Icon(icon),
 
       filled: true,
-      fillColor: Colors.grey.shade100,
+      fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
 
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 16,
@@ -45,14 +56,14 @@ class _LoginPageState extends State<LoginPage> {
       ),
 
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
       ),
 
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(
-          color: Theme.of(context).colorScheme.primary,
+          color: theme.colorScheme.primary,
           width: 1.5,
         ),
       ),
@@ -68,13 +79,13 @@ class _LoginPageState extends State<LoginPage> {
       body: Stack(
         children: [
 
-          /// 🎨 SOFT GRADIENT BACKGROUND
+          /// 🌈 MODERN GRADIENT BACKGROUND
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.9),
-                  theme.colorScheme.secondary.withOpacity(0.7),
+                  theme.colorScheme.primary,
+                  theme.colorScheme.secondary,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -82,9 +93,10 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          /// 🧊 LIGHT OVERLAY
-          Container(
-            color: Colors.white.withOpacity(0.05),
+          /// 🔥 BLUR EFFECT
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+            child: Container(color: Colors.black.withOpacity(0.1)),
           ),
 
           /// CONTENT
@@ -96,30 +108,30 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   children: [
 
-                    /// 🔹 LOGO
+                    /// 🔐 ICON
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: Colors.white,
                         shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.15),
                       ),
-                      child: Icon(
-                        Icons.lock_outline,
-                        size: 28,
-                        color: theme.colorScheme.primary,
+                      child: const Icon(
+                        Icons.lock_person_rounded,
+                        size: 32,
+                        color: Colors.white,
                       ),
                     ),
 
                     const SizedBox(height: 20),
 
-                    /// 🔹 TITLE
+                    /// TITLE
                     Obx(() {
                       final name = authController.userName.value;
 
                       return Text(
                         name.isEmpty
                             ? "Welcome Back"
-                            : "Welcome Back, $name",
+                            : "Welcome, $name",
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -130,175 +142,191 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 6),
 
                     const Text(
-                      "Login to your account",
+                      "Login to continue",
                       style: TextStyle(color: Colors.white70),
                     ),
 
                     const SizedBox(height: 30),
 
-                    /// 🔹 CARD
-                    Container(
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(22),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 25,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-
-                      child: Column(
-                        children: [
-
-                          /// EMAIL
-                          TextField(
-                            controller: emailController,
-                            onChanged: (value) {
-                              authController.fetchUserNameByEmail(value.trim());
-                            },
-                            decoration: inputStyle("Email", Icons.email_outlined),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          /// PASSWORD
-                          TextField(
-                            controller: passwordController,
-                            obscureText: obscurePassword,
-                            decoration: inputStyle("Password", Icons.lock_outline)
-                                .copyWith(
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  obscurePassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    obscurePassword = !obscurePassword;
-                                  });
-                                },
-                              ),
+                    /// 🧊 GLASS CARD
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(26),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                        child: Container(
+                          padding: const EdgeInsets.all(22),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface.withOpacity(0.85),
+                            borderRadius: BorderRadius.circular(26),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
                             ),
                           ),
 
-
-
-
-                          const SizedBox(height: 10),
-
-                          /// FORGOT PASSWORD
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {
-                                Get.to(() => const ForgotPasswordPage());
-                              },
-                              child: const Text("Forgot Password?"),
-                            ),
-                          ),
-
-                          const SizedBox(height: 10),
-
-                          /// 🔥 LOGIN BUTTON
-                          SizedBox(
-                            width: double.infinity,
-                            height: 52,
-
-                            child: Obx(() => ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: theme.colorScheme.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                elevation: 2,
-                              ),
-
-                              onPressed: authController.isLoading.value
-                                  ? null
-                                  : () {
-                                authController.login(
-                                  emailController.text.trim(),
-                                  passwordController.text.trim(),
-                                );
-                              },
-
-                              child: authController.isLoading.value
-                                  ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                                  : const Text(
-                                "Login",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            )),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          /// 🔐 GOOGLE SIGN-IN BUTTON
-                          SizedBox(
-                            width: double.infinity,
-                            height: 55,
-
-                            child: OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                side: BorderSide(
-                                  color: Theme.of(context).colorScheme.outline,
-                                ),
-                              ),
-
-                              onPressed: () {
-                                authController.signInWithGoogle();
-                              },
-
-                              icon: Image.network(
-                                "https://cdn-icons-png.flaticon.com/512/281/281764.png",
-                                height: 22,
-                              ),
-
-                              label: const Text(
-                                "Continue with Google",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          /// REGISTER
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: Column(
                             children: [
 
-                              Text(
-                                "Don’t have an account?",
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
+                              /// EMAIL
+                              TextField(
+                                controller: emailController,
+                                onChanged: (value) {
+                                  authController.fetchUserNameByEmail(value.trim());
+                                },
+                                decoration: inputStyle("Email", Icons.email_outlined),
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              /// PASSWORD
+                              TextField(
+                                controller: passwordController,
+                                obscureText: obscurePassword,
+                                decoration: inputStyle("Password", Icons.lock_outline)
+                                    .copyWith(
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        obscurePassword = !obscurePassword;
+                                      });
+                                    },
+                                  ),
                                 ),
                               ),
 
-                              TextButton(
-                                onPressed: () {
-                                  Get.to(() => const RegisterPage());
-                                },
-                                child: const Text("Register"),
+                              const SizedBox(height: 10),
+
+                              /// FORGOT PASSWORD
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    Get.to(() => const ForgotPasswordPage());
+                                  },
+                                  child: const Text("Forgot Password?"),
+                                ),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              /// LOGIN BUTTON
+                              SizedBox(
+                                width: double.infinity,
+                                height: 54,
+
+                                child: Obx(() => ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 6,
+                                    shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                                    backgroundColor: theme.colorScheme.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+
+                                  onPressed: authController.isLoading.value
+                                      ? null
+                                      : () {
+                                    authController.login(
+                                      emailController.text.trim(),
+                                      passwordController.text.trim(),
+                                    );
+                                  },
+
+                                  child: authController.isLoading.value
+                                      ? const SizedBox(
+                                    height: 22,
+                                    width: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                      : const Text(
+                                    "Login",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                )),
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              /// DIVIDER
+                              Row(
+                                children: const [
+                                  Expanded(child: Divider()),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 10),
+                                    child: Text("OR"),
+                                  ),
+                                  Expanded(child: Divider()),
+                                ],
+                              ),
+
+                              const SizedBox(height: 18),
+
+                              /// GOOGLE BUTTON
+                              SizedBox(
+                                width: double.infinity,
+                                height: 55,
+
+                                child: OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.surface,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    side: BorderSide(
+                                      color: theme.colorScheme.outlineVariant,
+                                    ),
+                                  ),
+
+                                  onPressed: () {
+                                    authController.signInWithGoogle();
+                                  },
+
+                                  icon: Image.network(
+                                    "https://cdn-icons-png.flaticon.com/512/281/281764.png",
+                                    height: 22,
+                                  ),
+
+                                  label: const Text(
+                                    "Continue with Google",
+                                    style: TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              /// REGISTER
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Don’t have an account?",
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Get.to(() => const RegisterPage());
+                                    },
+                                    child: const Text("Register"),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ],

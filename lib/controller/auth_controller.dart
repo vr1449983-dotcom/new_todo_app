@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:new_todo_app/screens/todo_list.dart';
+import '../screens/privacy_policy_page.dart';
 import '../screens/register_page.dart';
 
 class AuthController extends GetxController {
@@ -155,15 +156,21 @@ class AuthController extends GetxController {
     }
   }
 
-  /// 🔐 GOOGLE SIGN IN (ADDED ONLY)
   Future<void> signInWithGoogle() async {
     try {
       isLoading.value = true;
 
-      final GoogleSignInAccount? googleUser =
-      await GoogleSignIn().signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn();
 
-      if (googleUser == null) return;
+      await googleSignIn.signOut(); // optional (forces account picker)
+
+      final GoogleSignInAccount? googleUser =
+      await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        isLoading.value = false;
+        return;
+      }
 
       final GoogleSignInAuthentication googleAuth =
       await googleUser.authentication;
@@ -178,26 +185,29 @@ class AuthController extends GetxController {
 
       final user = userCredential.user!;
 
-      /// 🔥 SAVE USER (ONLY IF NEW)
       final doc =
       await _firestore.collection("users").doc(user.uid).get();
 
-      if (!doc.exists) {
-        await _firestore.collection("users").doc(user.uid).set({
-          "name": user.displayName ?? "",
-          "email": user.email ?? "",
-          "photoUrl": user.photoURL ?? "",
-          "createdAt": FieldValue.serverTimestamp(),
-          "lastLogin": FieldValue.serverTimestamp(),
+      /// 🔥 CHECK: NEW USER OR POLICY NOT ACCEPTED
+      if (!doc.exists ||
+          (doc.data()?["acceptedPolicy"] ?? false) != true) {
+
+        isLoading.value = false;
+
+        Get.to(() => const PrivacyPolicyPage(), arguments: {
+          "isGoogleUser": true,
+          "user": user,
         });
-      } else {
-        /// update last login
-        await _firestore.collection("users").doc(user.uid).set({
-          "lastLogin": FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+
+        return;
       }
 
-      Get.snackbar("Success", "Google Sign-In Successful");
+      /// ✅ NORMAL LOGIN
+      await _firestore.collection("users").doc(user.uid).set({
+        "lastLogin": FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      Get.snackbar("Success", "Welcome Back");
 
       Get.offAll(() => const TodoListScreen());
 
@@ -208,5 +218,4 @@ class AuthController extends GetxController {
       isLoading.value = false;
     }
   }
-
 }
