@@ -6,12 +6,17 @@ import 'screens/profile_page.dart';
 import 'screens/splash_screen.dart';
 import 'screens/todo_list.dart';
 import 'firebase_options.dart';
+import 'services/notification_service.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+
   );
+  await NotificationService.init();
+
   runApp(const MyApp());
 }
 

@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../screens/login_page.dart';
 
@@ -101,12 +102,28 @@ class ProfileController extends GetxController {
   /// ================================
   /// PICK IMAGE + UPLOAD
   /// ================================
-  Future<void> pickImage() async {
+  Future<void> pickImage({required bool fromCamera}) async {
     try {
       isUploading.value = true;
 
+      /// ✅ ASK PERMISSION
+      PermissionStatus status = fromCamera
+          ? await Permission.camera.request()
+          : await Permission.photos.request();
+
+      if (!status.isGranted) {
+        if (status.isPermanentlyDenied) {
+          openAppSettings();
+        }
+
+        Get.snackbar("Permission", "Permission denied");
+        isUploading.value = false;
+        return;
+      }
+
+      /// ✅ PICK IMAGE
       final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
+        source: fromCamera ? ImageSource.camera : ImageSource.gallery,
         imageQuality: 70,
       );
 
@@ -120,13 +137,12 @@ class ProfileController extends GetxController {
 
       final file = File(pickedFile.path);
 
-      /// CLOUDINARY UPLOAD
+      /// ☁️ CLOUDINARY UPLOAD (your existing code)
       final url = Uri.parse(
         "https://api.cloudinary.com/v1_1/drzpe0v4i/image/upload",
       );
 
       var request = http.MultipartRequest("POST", url);
-
       request.fields["upload_preset"] = "profile_upload";
 
       request.files.add(
@@ -149,6 +165,8 @@ class ProfileController extends GetxController {
         }, SetOptions(merge: true));
 
         photoUrl.value = imageUrl;
+
+        Get.snackbar("Success", "Profile updated");
       } else {
         Get.snackbar("Error", "Upload failed");
       }

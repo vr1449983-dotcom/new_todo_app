@@ -8,7 +8,9 @@ import 'package:new_todo_app/screens/setting_page.dart';
 import '../controller/profile_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '../services/notification_service.dart';
 import 'account_page.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class ProfilePage extends StatelessWidget {
   ProfilePage({super.key});
@@ -30,13 +32,23 @@ class ProfilePage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
 
+            /// CAMERA
             ListTile(
-              leading: Icon(Icons.photo_camera,
-                  color: Get.theme.colorScheme.primary),
-              title: const Text("Update Profile Photo"),
+              leading: Icon(Icons.camera_alt),
+              title: Text("Take Photo"),
               onTap: () {
                 Get.back();
-                controller.pickImage();
+                controller.pickImage(fromCamera: true);
+              },
+            ),
+
+            /// GALLERY
+            ListTile(
+              leading: Icon(Icons.photo),
+              title: Text("Choose from Gallery"),
+              onTap: () {
+                Get.back();
+                controller.pickImage(fromCamera: false);
               },
             ),
 

@@ -721,6 +721,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                     ],
                   ),
                 ),
+
                 Expanded(
                   child: todoList.isEmpty
                       ? Center(
