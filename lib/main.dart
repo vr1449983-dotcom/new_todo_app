@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
 
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFB388FF),// 🔥 modern premium color
+          seedColor: const  Color(0xFF1877F2),// 🔥 modern premium color
           brightness: Brightness.light,
         ),
 
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
 
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFB388FF),
+          seedColor: const  Color(0xFF1877F2),
           brightness: Brightness.dark,
         ),
 
