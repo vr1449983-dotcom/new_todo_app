@@ -492,39 +492,41 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
         final count = controller.selectedIds.length;
 
-        return Container(
-          height: 60,
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
-            children: [
-              if (count == 1)
+        return SafeArea(
+          child: Container(
+            height: 60,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          
+              children: [
+                if (count == 1)
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () async {
+                      final todo = await controller.getSelectedTodo();
+          
+                      if (todo != null) {
+                        _showAddEditDialog(todo: todo);
+                      }
+          
+                      controller.clearSelection();
+                    },
+                  ),
+          
+                if (count == 1)
+                  IconButton(
+                    icon: const Icon(Icons.push_pin),
+                    onPressed: controller.pinSelected,
+                  ),
+          
                 IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () async {
-                    final todo = await controller.getSelectedTodo();
-
-                    if (todo != null) {
-                      _showAddEditDialog(todo: todo);
-                    }
-
-                    controller.clearSelection();
-                  },
+                  icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
+                  onPressed: _confirmDeleteSelected,
                 ),
-
-              if (count == 1)
-                IconButton(
-                  icon: const Icon(Icons.push_pin),
-                  onPressed: controller.pinSelected,
-                ),
-
-              IconButton(
-                icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
-                onPressed: _confirmDeleteSelected,
-              ),
-            ],
+              ],
+            ),
           ),
         );
       }),
@@ -619,6 +621,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                       () => AppBar(
                     elevation: 0,
                     backgroundColor:Theme.of(context).colorScheme.surface,
+                    surfaceTintColor:Theme.of(context).colorScheme.surface ,
 
                     leading: controller.selectionMode.value
                         ? IconButton(
@@ -905,19 +908,20 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
                           subtitle: Row(
                             children: [
-
                               Icon(
                                 Icons.schedule,
                                 size: 14,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
-
                               const SizedBox(width: 4),
 
-                              Text(
-                                DateFormat('dd MMM • hh:mm a')
-                                    .format(todo.dateTime ??
-                                    DateTime.now()),
+                              Expanded( // 🔥 FIX
+                                child: Text(
+                                  DateFormat('dd MMM • hh:mm a')
+                                      .format(todo.dateTime ?? DateTime.now()),
+                                  overflow: TextOverflow.ellipsis, // prevents overflow
+                                  maxLines: 1,
+                                ),
                               ),
                             ],
                           ),
