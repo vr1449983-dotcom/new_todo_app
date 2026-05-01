@@ -81,162 +81,164 @@ class _TodoListScreenState extends State<TodoListScreen> {
     final TextEditingController categoryCtrl = TextEditingController();
 
     Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        height: 400,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Customize Categories",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-
-            /// Add Category Row
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: categoryCtrl,
-                    decoration: InputDecoration(
-                      hintText: "New category name",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          width: 1,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 15),
-                TextButton.icon(
-                  onPressed: () {
-                    final text = categoryCtrl.text.trim();
-                    if (text.isNotEmpty) {
-                      controller.addCategory(text);
-                      categoryCtrl.clear();
-                    }
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text("Add"),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    side: BorderSide(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      width: 1,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-              ],
-            ),
-
-            Divider(color: Theme.of(context).colorScheme.outlineVariant),
-
-            /// Categories List
-            Expanded(
-              child: Obx(
-                    () {
-                  // Build list: first 4 default, then Firestore custom
-                  final defaultCategories = ["All", "Starred", "Pending", "Completed"];
-                  final custom = controller.customCategories;
-
-                  final totalCount = defaultCategories.length + custom.length;
-
-                  return ListView.builder(
-                    itemCount: totalCount,
-                    itemBuilder: (_, i) {
-                      String cat;
-                      bool isDefault = i < 4;
-
-                      if (isDefault) {
-                        cat = defaultCategories[i];
-                      } else {
-                        cat = custom[i - 4];
-                      }
-
-                      // Default categories cannot be renamed/deleted
-                      if (isDefault) {
-                        return ListTile(title: Text(cat));
-                      }
-
-                      // Custom category UI
-                      return ListTile(
-                        title: Text(cat),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Rename button
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                final renameCtrl = TextEditingController(text: cat);
-                                Get.dialog(
-                                  AlertDialog(
-                                    title: const Text("Rename Category"),
-                                    content: TextField(controller: renameCtrl),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: Get.back,
-                                        child: const Text("Cancel"),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          final newName = renameCtrl.text.trim();
-                                          if (newName.isNotEmpty) {
-                                            controller.renameCategory(cat, newName);
-                                          }
-                                          Get.back();
-                                        },
-                                        child: const Text("Save"),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-
-                            // Delete button
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                controller.deleteCategory(cat);
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
+      SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          height: 400,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Customize Categories",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+        
+              /// Add Category Row
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: categoryCtrl,
+                      decoration: InputDecoration(
+                        hintText: "New category name",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            width: 1,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  TextButton.icon(
+                    onPressed: () {
+                      final text = categoryCtrl.text.trim();
+                      if (text.isNotEmpty) {
+                        controller.addCategory(text);
+                        categoryCtrl.clear();
+                      }
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text("Add"),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        width: 1,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ],
+              ),
+        
+              Divider(color: Theme.of(context).colorScheme.outlineVariant),
+        
+              /// Categories List
+              Expanded(
+                child: Obx(
+                      () {
+                    // Build list: first 4 default, then Firestore custom
+                    final defaultCategories = ["All", "Starred", "Pending", "Completed"];
+                    final custom = controller.customCategories;
+        
+                    final totalCount = defaultCategories.length + custom.length;
+        
+                    return ListView.builder(
+                      itemCount: totalCount,
+                      itemBuilder: (_, i) {
+                        String cat;
+                        bool isDefault = i < 4;
+        
+                        if (isDefault) {
+                          cat = defaultCategories[i];
+                        } else {
+                          cat = custom[i - 4];
+                        }
+        
+                        // Default categories cannot be renamed/deleted
+                        if (isDefault) {
+                          return ListTile(title: Text(cat));
+                        }
+        
+                        // Custom category UI
+                        return ListTile(
+                          title: Text(cat),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Rename button
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () {
+                                  final renameCtrl = TextEditingController(text: cat);
+                                  Get.dialog(
+                                    AlertDialog(
+                                      title: const Text("Rename Category"),
+                                      content: TextField(controller: renameCtrl),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: Get.back,
+                                          child: const Text("Cancel"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            final newName = renameCtrl.text.trim();
+                                            if (newName.isNotEmpty) {
+                                              controller.renameCategory(cat, newName);
+                                            }
+                                            Get.back();
+                                          },
+                                          child: const Text("Save"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+        
+                              // Delete button
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  controller.deleteCategory(cat);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
