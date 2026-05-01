@@ -725,37 +725,39 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 Expanded(
                   child: todoList.isEmpty
                       ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-
-                        Lottie.asset(
-                          'assets/animations/ghosty.json',
-                          width: 300,
-                          height: 300,
-                          fit: BoxFit.contain,
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        Text(
-                          "No Tasks Yet",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurfaceVariant,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                      
+                          Lottie.asset(
+                            'assets/animations/ghosty.json',
+                            width: 300,
+                            height: 300,
+                            fit: BoxFit.contain,
                           ),
-                        ),
-
-                       // const SizedBox(height: 6),
-
-                        Text(
-                          "Tap + to add a task",
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant,
+                      
+                          const SizedBox(height: 20),
+                      
+                          Text(
+                            "No Tasks Yet",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
                           ),
-                        ),
-                      ],
+                      
+                         // const SizedBox(height: 6),
+                      
+                          Text(
+                            "Tap + to add a task",
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                       : ListView.builder(
